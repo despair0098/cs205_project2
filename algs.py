@@ -134,7 +134,50 @@ def forwardSelection(data, features, k=5):
     print(f"The best feature subset is {best_set}, with an accuracy of {best_accuracy:.4f}")
 
 def backwardElimination(data, features, k=5):
-   return 0
+    current_set = features[:]  # Start with all features
+    best_set = features[:]
+    best_accuracy = KFoldValidator(data, -1, current_set, 1, k)
+
+    print(f"Starting Backward Elimination with features: {current_set}")
+    print(f"Initial full-set accuracy: {best_accuracy:.4f}\n")
+
+    for level in range(1, len(features) + 1):
+        start = time.time()
+        print(f"Level {level}:")
+
+        feature_to_remove = None
+        best_so_far_accuracy = 0.0
+
+        for feature in current_set:
+            candidate_set = current_set[:]
+            candidate_set.remove(feature)
+
+            # Evaluate candidate set (pass original set and feature to remove)
+            accuracy = KFoldValidator(data, feature, current_set, alg=1, k=k)
+
+            print(f"  Using feature(s) {candidate_set}, accuracy is {accuracy:.4f}")
+
+            if accuracy > best_so_far_accuracy:
+                best_so_far_accuracy = accuracy
+                feature_to_remove = feature
+
+        if feature_to_remove is not None:
+            current_set.remove(feature_to_remove)
+            print(f"Removed feature {feature_to_remove}.")
+        else:
+            print("No feature removal improved accuracy.")
+
+        if best_so_far_accuracy > best_accuracy:
+            best_set = current_set[:]
+            best_accuracy = best_so_far_accuracy
+        else:
+            print("Warning: Accuracy has decreased or plateaued.")
+
+        print(f"Current best feature set: {current_set} with accuracy {best_so_far_accuracy:.4f}")
+        print(f"Time to evaluate level {level}: {time.time() - start:.2f} seconds\n")
+
+    print("Finished search!")
+    print(f"The best feature subset is {best_set} with accuracy {best_accuracy:.4f}")
 
 
 """
