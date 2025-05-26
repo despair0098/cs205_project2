@@ -88,10 +88,52 @@ def NearestNeighbor(data, features, curr):
                nearest = data[i][0] 
     return nearest                            
 
-def forwardSelection(data, features):
-   return 0
+def forwardSelection(data, features, k=5):
+    current_set = []
+    best_set = []
+    best_accuracy = 0.0
 
-def backwardElimination(data, features):
+    print("Beginning forward selection with {}-fold cross-validation.".format(k))
+
+    for level in range(1, len(features) + 1):
+        start = time.time()
+        print(f"\nOn level {level} of the search tree...")
+
+        feature_to_add = None
+        best_so_far_accuracy = 0.0
+
+        for feature in features:
+            if feature in current_set:
+                continue  # Skip already selected features
+
+            # Evaluate accuracy with the candidate feature added
+            accuracy = KFoldValidator(data, feature, current_set, 0, k)
+            candidate_set = current_set + [feature]
+            print(f"Using feature(s) {candidate_set}, accuracy is {accuracy:.4f}")
+
+            if accuracy > best_so_far_accuracy:
+                best_so_far_accuracy = accuracy
+                feature_to_add = feature
+
+        if feature_to_add is not None:
+            current_set.append(feature_to_add)
+            print(f"Feature {feature_to_add} added to the current set.")
+        else:
+            print("No feature improved accuracy at this level.")
+
+        if best_so_far_accuracy > best_accuracy:
+            best_accuracy = best_so_far_accuracy
+            best_set = current_set[:]
+        else:
+            print("Warning: Accuracy has decreased or plateaued.")
+
+        print(f"Current best feature set: {current_set} with accuracy {best_so_far_accuracy:.4f}")
+        print(f"Time to evaluate level {level}: {time.time() - start:.2f} seconds")
+
+    print("\nFinished search!")
+    print(f"The best feature subset is {best_set}, with an accuracy of {best_accuracy:.4f}")
+
+def backwardElimination(data, features, k=5):
    return 0
 
 
@@ -99,4 +141,6 @@ def backwardElimination(data, features):
 https://www.geeksforgeeks.org/k-nearest-neighbours/
 https://www.geeksforgeeks.org/cross-validation-machine-learning/
 https://www.kaggle.com/code/burhanykiyakoglu/k-nn-logistic-regression-k-fold-cv-from-scratch#-k-Nearest-Neighbors-(k-NN)
+#https://stackoverflow.com/questions/35608790/how-to-add-new-value-to-a-list-without-using-append-and-then-store-the-value
+#https://stackoverflow.com/questions/11993878/python-why-does-my-list-change-when-im-not-actually-changing-it
 """
