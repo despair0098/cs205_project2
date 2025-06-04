@@ -2,11 +2,11 @@ import copy
 import math
 import time
 import numpy as np
-from collections import Counter
 import random
 
+# data = X_train, features = Y_train, cur = the current point inside X_test
+
 def kFoldSplit(data, k=5, shuffle=True):
-   # Creates the list of indices from 0 to len(data)-1
    indices = list(range(len(data)))
    if shuffle:
       random.shuffle(indices)
@@ -15,80 +15,80 @@ def kFoldSplit(data, k=5, shuffle=True):
    folds = []
    for i in range(k):
     # Calculate the start and end indices for the current fold
-    start = i*foldSize
+    start_i = i*foldSize
     if i != k-1:
         # For all folds except the last one, take exactly fold_size elements
-        end = (i+1) * foldSize
+        end_i = (i+1) * foldSize
     else:
         # For the last fold, include any remaining elements (in case len(data) is not divisible by k)
-        end = len(indices)
+        end_i = len(indices)
 
     # Select the test indices for the current fold
-    test_index = indices[start:end]
+    test_idx = indices[start_i:end_i]
 
     # Select the training indices by excluding the test indices
-    train_index = []
-    for index in indices:
-      if index not in test_index:
-         train_index.append(index)
+    train_idx = []
+    for idx in indices:
+      if idx not in test_idx:
+         train_idx.append(idx)
 
     # Store the (train, test) indices as a tuple
-    folds.append((train_index, test_index))
+    folds.append((train_idx, test_idx))
    return folds
 
 def KFoldValidator(data, feature, current, alg, k=5):
     accuracy = 0
     test = copy.deepcopy(current)
 
-    if alg == 0:  # forward selection, adding the feature
+    if alg == 0:  # forward selection
         test.append(feature)
-    elif alg == 1 and feature != -1: # backward elimination, removing the feature
+    elif alg == 1 and feature != -1: # backward elimination
         test.remove(feature)
     elif alg == 1 and feature == -1: # no feature to remove for evaluation used for the beginning of backward
         for x in current:
             if x != feature:
                 test.append(x)
 
-    # Creates the folds
     folds = kFoldSplit(data, k)
 
     total = 0
-    for train_index, test_index in folds:
+    for train_idx, test_idx in folds:
         train_data = []
         # makes the train data
-        for i in train_index:
+        train_data = []
+        # makes the train data
+        for i in train_idx:
             train_data.append(data[i])
 
         correct = 0
-        for i in test_index:
+        for i in test_idx:
             # predicts the label using KNN
-            # train_data + [data[i]] creates the list: training data + the current test sample
-            # current index is the len(data[i]) and thats the current test sample. 
-            pred = NearestNeighbor(train_data + [data[i]], test, len(train_data))  
+            #print(train_data)
+            #print(train_data + [data[i]])
+            pred = NearestNeighbor(train_data + [data[i]], test, len(train_data))  # curr index is last in list
             if pred == data[i][0]:
                 correct += 1
 
         accuracy += correct
         # total number of test samples
-        total += len(test_index)
+        total += len(test_idx)
 
     return accuracy / total
 
 
 def euclidean(data, point1, point2, features):
    distance = 0
-   # calculates the distance for each features
    for feature in features:
       distance += (data[point1][feature] - data[point2][feature]) ** 2
    return np.sqrt(distance)
 
-def NearestNeighbor(data, features, current):
+def NearestNeighbor(data, features, curr):
     neighborDist = math.inf
     nearest = 0
     for i in range(len(data)):
         # skips the current label
-        if i != current:
-            distance = euclidean(data, current, i, features)
+        if i != curr:
+            distance = euclidean(data, curr, i, features)
             if distance <= neighborDist:
                # Set nearest neighbor to current data point
                neighborDist = distance
@@ -104,6 +104,9 @@ def forwardSelection(data, features, k=5):
     print("Beginning forward selection with {}-fold cross-validation.".format(k))
 
     start = time.time()
+
+    empty_accuracy = KFoldValidator(data, feature=-1, current=[], alg=0, k=k)
+    print(f"Using feature(s) {current_set}, Accuracy with no features: {empty_accuracy:.4f}")
 
     # Goes over every row that has all of the features
     for level in range(1, len(features) + 1):
@@ -168,7 +171,7 @@ def backwardElimination(data, features, k=5):
             # Evaluate candidate set (pass original set and feature to remove)
             accuracy = KFoldValidator(data, feature, current_set, alg=1, k=k)
 
-            print(f"  Using feature(s) {candidate_set}, accuracy is {accuracy:.4f}")
+            print(f"Using feature(s) {candidate_set}, accuracy is {accuracy:.4f}")
 
             if accuracy > best_so_far_accuracy:
                 best_so_far_accuracy = accuracy
