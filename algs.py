@@ -194,12 +194,3 @@ def backwardElimination(data, features, k=5):
     print("Finished search!")
     print(f"The best feature subset is {best_set} with accuracy {best_accuracy:.4f}")
     print(f"Time to evaluate level {level}: {time.time() - start:.2f} seconds\n")
-
-
-"""
-https://www.geeksforgeeks.org/k-nearest-neighbours/
-https://www.geeksforgeeks.org/cross-validation-machine-learning/
-https://www.kaggle.com/code/burhanykiyakoglu/k-nn-logistic-regression-k-fold-cv-from-scratch#-k-Nearest-Neighbors-(k-NN)
-#https://stackoverflow.com/questions/35608790/how-to-add-new-value-to-a-list-without-using-append-and-then-store-the-value
-#https://stackoverflow.com/questions/11993878/python-why-does-my-list-change-when-im-not-actually-changing-it
-"""

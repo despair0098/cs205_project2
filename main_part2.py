@@ -13,7 +13,8 @@ while not os.path.exists(file_path):
 
 # Load and normalize data
 df = pandas.read_csv(file_path, delim_whitespace=True, engine="python", header=None)
-# this reorders the column. The class label is at the last column which is column 8. 
+# this reorders the column. The class label is at the last column which is column 8.
+#It also removes the first feature, the sequence which is at column 0. 
 df_reordered = df.iloc[:, [8, 1, 2, 3, 4, 5, 6, 7]]
 # Creates a list of features that is inside the dataset
 class_features = df[8].unique()
@@ -51,9 +52,3 @@ elif choice2 == 2:
 else:
     print("Invalid option.")
     exit(0)
-
-
-"""
-https://stackoverflow.com/questions/55852570/how-can-i-get-all-the-unique-categories-within-my-dataframe-using-python
-https://www.geeksforgeeks.org/change-the-order-of-a-pandas-dataframe-columns-in-python/
-"""
